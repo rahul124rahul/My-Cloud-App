@@ -1,0 +1,169 @@
+<!--&lt;!&ndash; dashboard.html &ndash;&gt;-->
+<!--<h2>Dashboard</h2>-->
+<!--<a href="/logout">Logout</a>-->
+
+<!--<h3>Upload File</h3>-->
+<!--<form action="/upload" method="POST" enctype="multipart/form-data">-->
+<!--  <input type="text" name="folder" placeholder="Folder (optional)">-->
+<!--  <br><br>-->
+<!--  <input type="file" name="file">-->
+<!--  <button type="submit">Upload</button>-->
+<!--</form>-->
+
+<!--<h3>Your Files</h3>-->
+<!--<ul>-->
+<!--  {% for file in files %}-->
+<!--    <li>-->
+<!--      {{ file.file_name }}-->
+<!--      <a href="{{ url_for('files.download', s3_key=file.s3_key) }}">Download</a>-->
+<!--      <a href="{{ url_for('files.delete', s3_key=file.s3_key) }}">Delete</a>-->
+<!--    </li>-->
+<!--  {% endfor %}-->
+<!--</ul>-->
+
+
+<!--<!DOCTYPE html>-->
+<!--<html>-->
+
+<!--<head>-->
+
+<!--<title>Cloud Storage</title>-->
+
+<!--<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">-->
+
+<!--</head>-->
+
+<!--<body>-->
+
+<!--<div class="container">-->
+
+<!--<h1>☁️ My Cloud Storage</h1>-->
+
+<!--<div class="upload-box" id="drop-area">-->
+
+<!--<p>Drag & Drop Files Here</p>-->
+
+<!--<form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">-->
+
+<!--<input type="text" name="folder" placeholder="Folder name">-->
+
+<!--<input type="file" id="fileElem" name="file">-->
+
+<!--<button type="submit">Upload File</button>-->
+
+<!--</form>-->
+
+<!--<div id="progress-bar">-->
+<!--<div id="progress"></div>-->
+<!--</div>-->
+
+<!--</div>-->
+
+
+<!--<h2>📂 Files</h2>-->
+
+<!--<table>-->
+
+<!--<tr>-->
+<!--<th>Folder</th>-->
+<!--<th>File</th>-->
+<!--<th>Actions</th>-->
+<!--</tr>-->
+
+<!--{% for file in files %}-->
+
+<!--<tr>-->
+
+<!--<td>{{file.folder}}</td>-->
+
+<!--<td>-->
+
+<!--<span class="file-icon">📄</span>-->
+
+<!--{{file.file_name}}-->
+
+<!--</td>-->
+
+<!--<td>-->
+
+<!--<a class="download" href="/download/{{file.s3_key}}">Download</a>-->
+
+<!--<a class="delete" href="/delete/{{file.s3_key}}">Delete</a>-->
+
+<!--</td>-->
+
+<!--</tr>-->
+
+<!--{% endfor %}-->
+
+<!--</table>-->
+
+<!--</div>-->
+
+<!--<script src="{{ url_for('static', filename='js/upload.js') }}"></script>-->
+
+<!--</body>-->
+
+<!--</html>-->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Cloud Storage</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+
+<div class="container">
+    <h1>☁️ My Cloud Storage</h1>
+
+    <div class="upload-box" id="drop-area">
+        <p>Drag & Drop Files Here</p>
+
+        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+            <input type="text" name="folder" placeholder="Folder name">
+
+            <input type="file" id="fileElem" name="file">
+
+            <button type="submit">Upload File</button>
+        </form>
+
+        <div id="progress-bar">
+            <div id="progress"></div>
+        </div>
+    </div>
+
+    <h2>📂 Files</h2>
+
+    <table>
+        <tr>
+            <th>Folder</th>
+            <th>File</th>
+            <th>Actions</th>
+        </tr>
+
+        {% for file in files %}
+        <tr>
+            <td>{{ file.folder }}</td>
+
+            <td>
+                <span class="file-icon">📄</span>
+                {{ file.file_name }}
+            </td>
+
+            <td>
+                <a class="download" href="/download/{{ file.s3_key }}">Download</a>
+                <a class="delete" href="/delete/{{ file.s3_key }}">Delete</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+
+</div>
+
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+
+</body>
+</html>
