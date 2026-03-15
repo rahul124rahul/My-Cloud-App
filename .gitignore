@@ -1,5 +1,14 @@
+# Secrets — never commit
 .env
-.idea/
+
+# Python
 __pycache__/
+*.py[cod]
 *.pyc
+.venv/
 venv/
+env/
+
+# IDE
+.idea/
+.vscode/

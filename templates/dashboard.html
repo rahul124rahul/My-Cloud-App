@@ -1,166 +1,177 @@
-<!--&lt;!&ndash; dashboard.html &ndash;&gt;-->
-<!--<h2>Dashboard</h2>-->
-<!--<a href="/logout">Logout</a>-->
-
-<!--<h3>Upload File</h3>-->
-<!--<form action="/upload" method="POST" enctype="multipart/form-data">-->
-<!--  <input type="text" name="folder" placeholder="Folder (optional)">-->
-<!--  <br><br>-->
-<!--  <input type="file" name="file">-->
-<!--  <button type="submit">Upload</button>-->
-<!--</form>-->
-
-<!--<h3>Your Files</h3>-->
-<!--<ul>-->
-<!--  {% for file in files %}-->
-<!--    <li>-->
-<!--      {{ file.file_name }}-->
-<!--      <a href="{{ url_for('files.download', s3_key=file.s3_key) }}">Download</a>-->
-<!--      <a href="{{ url_for('files.delete', s3_key=file.s3_key) }}">Delete</a>-->
-<!--    </li>-->
-<!--  {% endfor %}-->
-<!--</ul>-->
-
-
-<!--<!DOCTYPE html>-->
-<!--<html>-->
-
-<!--<head>-->
-
-<!--<title>Cloud Storage</title>-->
-
-<!--<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">-->
-
-<!--</head>-->
-
-<!--<body>-->
-
-<!--<div class="container">-->
-
-<!--<h1>☁️ My Cloud Storage</h1>-->
-
-<!--<div class="upload-box" id="drop-area">-->
-
-<!--<p>Drag & Drop Files Here</p>-->
-
-<!--<form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">-->
-
-<!--<input type="text" name="folder" placeholder="Folder name">-->
-
-<!--<input type="file" id="fileElem" name="file">-->
-
-<!--<button type="submit">Upload File</button>-->
-
-<!--</form>-->
-
-<!--<div id="progress-bar">-->
-<!--<div id="progress"></div>-->
-<!--</div>-->
-
-<!--</div>-->
-
-
-<!--<h2>📂 Files</h2>-->
-
-<!--<table>-->
-
-<!--<tr>-->
-<!--<th>Folder</th>-->
-<!--<th>File</th>-->
-<!--<th>Actions</th>-->
-<!--</tr>-->
-
-<!--{% for file in files %}-->
-
-<!--<tr>-->
-
-<!--<td>{{file.folder}}</td>-->
-
-<!--<td>-->
-
-<!--<span class="file-icon">📄</span>-->
-
-<!--{{file.file_name}}-->
-
-<!--</td>-->
-
-<!--<td>-->
-
-<!--<a class="download" href="/download/{{file.s3_key}}">Download</a>-->
-
-<!--<a class="delete" href="/delete/{{file.s3_key}}">Delete</a>-->
-
-<!--</td>-->
-
-<!--</tr>-->
-
-<!--{% endfor %}-->
-
-<!--</table>-->
-
-<!--</div>-->
-
-<!--<script src="{{ url_for('static', filename='js/upload.js') }}"></script>-->
-
-<!--</body>-->
-
-<!--</html>-->
-
-
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
-<title>Cloud Storage</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Drive</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
 
-<div class="container">
-    <h1>☁️ My Cloud Storage</h1>
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-brand">
+        <span class="brand-icon">&#9729;&#65039;</span>
+        <span class="brand-text">CloudDrive</span>
+    </div>
 
-    <div class="upload-box" id="drop-area">
-        <p>Drag & Drop Files Here</p>
+    <nav class="sidebar-nav">
+        <a href="/dashboard" class="nav-item active">
+            <span class="nav-icon">&#127968;</span> My Drive
+        </a>
+    </nav>
 
-        <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
-            <input type="text" name="folder" placeholder="Folder name">
+    <div class="sidebar-footer">
+        <span class="user-email">{{ session.get('email', '') }}</span>
+        <a href="/logout" class="nav-item logout">
+            <span class="nav-icon">&#128682;</span> Logout
+        </a>
+    </div>
+</aside>
 
-            <input type="file" id="fileElem" name="file">
+<!-- Main Content -->
+<main class="main-content">
 
-            <button type="submit">Upload File</button>
-        </form>
+    <!-- Top Toolbar -->
+    <header class="toolbar">
+        <div class="breadcrumb">
+            <a href="/dashboard">My Drive</a>
+            {% for crumb in breadcrumbs %}
+                <span class="sep">&#9656;</span>
+                <a href="/dashboard?folder={{ crumb.path }}">{{ crumb.name }}</a>
+            {% endfor %}
+        </div>
+    </header>
 
-        <div id="progress-bar">
-            <div id="progress"></div>
+    <!-- Action Cards -->
+    <div class="action-row">
+        <div class="card upload-card" id="drop-area">
+            <div class="card-header">
+                <span>&#128228;</span> Upload File
+            </div>
+            <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="folder" value="{{ current_folder }}">
+                <label class="file-label" for="fileElem">
+                    <span class="upload-icon">&#128194;</span>
+                    <span id="file-chosen-name">Choose or drag a file</span>
+                </label>
+                <input type="file" id="fileElem" name="file" hidden>
+                <div id="progress-bar"><div id="progress"></div></div>
+                <button type="submit" class="btn btn-primary">Upload</button>
+            </form>
+        </div>
+
+        <div class="card folder-card">
+            <div class="card-header">
+                <span>&#128193;</span> New Folder
+            </div>
+            <form action="/create-folder" method="POST">
+                <input type="hidden" name="parent_folder" value="{{ current_folder }}">
+                <input type="text" name="folder_name" placeholder="Folder name" required class="input">
+                <button type="submit" class="btn btn-secondary">Create</button>
+            </form>
         </div>
     </div>
 
-    <h2>📂 Files</h2>
+    <!-- File Table -->
+    <section class="file-section">
+        <div class="section-header">
+            <h2>{% if current_folder %}{{ current_folder.split('/')[-1] }}{% else %}All Files{% endif %}</h2>
+            <span class="file-count">{{ files | length }} item{{ 's' if files | length != 1 else '' }}</span>
+        </div>
 
-    <table>
-        <tr>
-            <th>Folder</th>
-            <th>File</th>
-            <th>Actions</th>
-        </tr>
+        <table class="file-table">
+            <thead>
+                <tr>
+                    <th class="col-name">Name</th>
+                    <th class="col-type">Type</th>
+                    <th class="col-size">Size</th>
+                    <th class="col-date">Modified</th>
+                    <th class="col-actions">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in files %}
+                <tr class="file-row">
+                    <td class="col-name">
+                        {% if item.item_type == 'folder' %}
+                            <a href="/dashboard?folder={{ item.folder_path }}" class="item-link folder-link">
+                                <span class="icon icon-folder">&#128193;</span>
+                                <span class="item-name">{{ item.file_name }}</span>
+                            </a>
+                        {% else %}
+                            <div class="item-link">
+                                <span class="icon icon-file">&#128196;</span>
+                                <span class="item-name">{{ item.file_name }}</span>
+                            </div>
+                        {% endif %}
+                    </td>
+                    <td class="col-type">
+                        {% if item.item_type == 'folder' %}
+                            <span class="badge badge-folder">Folder</span>
+                        {% else %}
+                            <span class="badge badge-file">{{ item.file_type | upper }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="col-size">
+                        {% if item.item_type == 'folder' %}&mdash;{% else %}{{ format_size(item.file_size | int) }}{% endif %}
+                    </td>
+                    <td class="col-date">
+                        {% if item.uploaded_at %}{{ item.uploaded_at[:16] | replace('T', ' ') }}{% else %}&mdash;{% endif %}
+                    </td>
+                    <td class="col-actions">
+                        <div class="action-btns">
+                            <button class="btn-icon btn-rename" title="Rename"
+                                onclick="openRename('{{ item.file_id }}', '{{ item.file_name }}')">&#9998;</button>
 
-        {% for file in files %}
-        <tr>
-            <td>{{ file.folder }}</td>
+                            {% if item.item_type != 'folder' %}
+                                <a class="btn-icon btn-download" title="Download"
+                                   href="/download/{{ item.s3_key }}">&#11015;</a>
+                            {% endif %}
 
-            <td>
-                <span class="file-icon">📄</span>
-                {{ file.file_name }}
-            </td>
+                            {% if item.item_type == 'folder' %}
+                                <a class="btn-icon btn-delete" title="Delete"
+                                   href="/delete-folder?path={{ item.folder_path }}&amp;parent={{ current_folder }}"
+                                   onclick="return confirm('Delete folder and all contents?')">&#128465;</a>
+                            {% else %}
+                                <a class="btn-icon btn-delete" title="Delete"
+                                   href="/delete/{{ item.s3_key }}?folder={{ current_folder }}"
+                                   onclick="return confirm('Delete this file?')">&#128465;</a>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
 
-            <td>
-                <a class="download" href="/download/{{ file.s3_key }}">Download</a>
-                <a class="delete" href="/delete/{{ file.s3_key }}">Delete</a>
-            </td>
-        </tr>
-        {% endfor %}
-    </table>
+                {% if not files %}
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        <div class="empty-icon">&#128194;</div>
+                        <p>This folder is empty</p>
+                        <span>Upload a file or create a folder to get started</span>
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </section>
+</main>
 
+<!-- Rename Modal -->
+<div id="renameModal" class="modal-overlay" style="display:none;">
+    <div class="modal">
+        <h3>Rename</h3>
+        <form action="/rename" method="POST">
+            <input type="hidden" name="file_id" id="renameFileId">
+            <input type="hidden" name="folder" value="{{ current_folder }}">
+            <input type="text" name="new_name" id="renameInput" class="input" required>
+            <div class="modal-btns">
+                <button type="button" class="btn btn-ghost" onclick="closeRename()">Cancel</button>
+                <button type="submit" class="btn btn-primary">Rename</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script src="{{ url_for('static', filename='js/upload.js') }}"></script>
